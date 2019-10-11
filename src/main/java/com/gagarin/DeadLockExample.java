@@ -34,25 +34,19 @@ class Runner {
 
 
     private void takeLocks(Lock lock1, Lock lock2) {
-        boolean firstLockTaken = false;
-        boolean secondLockTaken = false;
+        boolean isFirstLockTaken = false;
+        boolean isSecondLockTaken = false;
 
         while (true) {
 
-            try {
-                firstLockTaken = lock1.tryLock();
-                secondLockTaken = lock2.tryLock();
+            if ((isFirstLockTaken = lock1.tryLock()) && (isSecondLockTaken = lock2.tryLock()))
+                return;
 
-            } finally {
-                if (firstLockTaken && secondLockTaken)
-                    return;
+            if (isFirstLockTaken)
+                lock1.unlock();
 
-                if (firstLockTaken)
-                    lock1.unlock();
-
-                if (secondLockTaken)
-                    lock2.unlock();
-            }
+            if (isSecondLockTaken)
+                lock2.unlock();
 
             try {
                 Thread.sleep(1);
