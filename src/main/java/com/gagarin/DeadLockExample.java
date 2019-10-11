@@ -1,9 +1,6 @@
 package com.gagarin;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -36,17 +33,41 @@ class Runner {
     private Lock lock2 = new ReentrantLock();
 
 
-    // Set demonstration using HashSet Constructor
-    Set<Integer> set = new HashSet<>(Arrays.asList(1, 2));
+    private void takeLocks(Lock lock1, Lock lock2) {
+        boolean firstLockTaken = false;
+        boolean secondLockTaken = false;
 
+        while (true) {
+
+            try {
+                firstLockTaken = lock1.tryLock();
+                secondLockTaken = lock2.tryLock();
+
+            } finally {
+                if (firstLockTaken && secondLockTaken)
+                    return;
+
+                if (firstLockTaken)
+                    lock1.unlock();
+
+                if (secondLockTaken)
+                    lock2.unlock();
+            }
+
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public void firstThread() {
         Random random = new Random();
 
 
         for (int i = 0; i < 10000; i++) {
-            lock1.lock();
-            lock2.lock();
+            takeLocks(lock1, lock2);
             try {
                 Account.transfer(account1, account2, random.nextInt(100));
             } finally {
@@ -60,8 +81,7 @@ class Runner {
         Random random = new Random();
 
         for (int i = 0; i < 10000; i++) {
-            lock1.lock();
-            lock2.lock();
+            takeLocks(lock2, lock1);
             //если вызвать локирование  в другом порядке, то возникнет deadlock, например:
             //lock2.lock();
             //lock1.lock();
