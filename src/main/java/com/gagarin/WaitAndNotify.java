@@ -3,6 +3,8 @@ package com.gagarin;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class WaitAndNotify {
     public static void main(String[] args) {
@@ -36,7 +38,6 @@ class ConsumerProducer {
     private final Object lock = new Object();
 
     public void produce() throws InterruptedException {
-        int value = 0;
         while (true) {
             synchronized (lock) {
                 while (queue.size() >= LIMIT)
